@@ -24,6 +24,8 @@ const HTML = `
   --text:#111827;
   --muted:#6b7280;
   --accent:#3b82f6;
+  --good:#16a34a;
+  --warn:#d97706;
 }
 
 *{box-sizing:border-box}
@@ -37,127 +39,135 @@ body{
 
 /* ===== HEADER ===== */
 header{
-  padding:28px 16px 12px;
+  padding:24px 16px 12px;
   text-align:center;
 }
 header h1{
   margin:0;
-  font-size:26px;
+  font-size:24px;
   font-weight:600;
 }
 header p{
-  margin-top:6px;
+  margin:6px 0 0;
   font-size:14px;
   color:var(--muted);
 }
 
-/* ===== QUICK BAR ===== */
-.city-bar{
+/* ===== CITY PILLS ===== */
+.city-pills{
   display:flex;
-  gap:12px;
+  gap:10px;
   justify-content:center;
-  margin-top:16px;
+  flex-wrap:wrap;
+  margin-top:14px;
 }
-.city-pill{
+.pill{
   background:var(--card);
   border-radius:14px;
-  padding:10px 14px;
+  padding:8px 12px;
   font-size:14px;
-  box-shadow:0 8px 24px rgba(0,0,0,.06);
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+  cursor:pointer;
+}
+.pill.active{
+  outline:2px solid var(--accent);
 }
 
 /* ===== MAP ===== */
 .map-wrap{
-  position:relative;
-  margin:24px auto 0;
-  max-width:900px;
+  margin:20px auto 0;
+  max-width:1100px;
   padding:0 12px;
 }
-.map-bg{
-  background:var(--card);
-  border-radius:24px;
-  padding:16px;
+.map{
+  position:relative;
 }
-.map-bg object{
+.map object{
   width:100%;
   height:420px;
-  opacity:.95;
+  display:block;
 }
 
-/* ===== CITY DOTS ===== */
+/* ===== DOTS ===== */
 .city-dot{
   position:absolute;
   transform:translate(-50%,-50%);
   cursor:pointer;
 }
 .city-dot .dot{
-  width:16px;
-  height:16px;
-  background:var(--accent);
+  width:14px;
+  height:14px;
   border-radius:50%;
+  background:var(--accent);
   box-shadow:0 0 0 8px rgba(59,130,246,.18);
 }
-.city-dot span{
-  display:block;
-  margin-top:6px;
-  font-size:13px;
-  color:#1f2937;
-  white-space:nowrap;
+.city-dot.active .dot{
+  box-shadow:0 0 0 10px rgba(59,130,246,.28);
 }
 
-/* ===== FLOAT CARD ===== */
-.card{
-  position:absolute;
+/* ===== CITY PANEL ===== */
+.panel{
+  max-width:1100px;
+  margin:16px auto 0;
+  padding:0 12px;
+}
+.panel-inner{
   background:var(--card);
-  border-radius:18px;
+  border-radius:20px;
   padding:16px;
-  width:220px;
-  box-shadow:0 20px 40px rgba(0,0,0,.15);
-  display:none;
-  z-index:10;
+  box-shadow:0 10px 30px rgba(0,0,0,.08);
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
 }
-.card h3{
-  margin:0;
-  font-size:16px;
+.panel h2{
+  grid-column:1 / -1;
+  margin:0 0 6px;
+  font-size:18px;
 }
-.card .temp{
-  font-size:34px;
-  font-weight:500;
-  margin:6px 0;
+.stat{
+  background:#f9fafb;
+  border-radius:14px;
+  padding:12px;
 }
-.card .desc{
-  font-size:14px;
+.stat span{
+  display:block;
+  font-size:13px;
   color:var(--muted);
 }
-.card .meta{
-  margin-top:10px;
-  font-size:13px;
-  color:#374151;
+.stat strong{
+  font-size:18px;
+  font-weight:500;
+}
+.panel-note{
+  grid-column:1 / -1;
+  font-size:14px;
+  color:var(--muted);
 }
 
 /* ===== POPULAR ===== */
 .popular{
-  max-width:900px;
-  margin:40px auto 0;
-  padding:0 16px;
+  max-width:1100px;
+  margin:28px auto 0;
+  padding:0 12px;
 }
-.popular h2{
-  font-size:18px;
-  margin-bottom:12px;
+.popular h3{
+  margin:0 0 10px;
+  font-size:16px;
 }
 .popular-grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:14px;
+  gap:12px;
 }
 .city-card{
   background:var(--card);
   border-radius:16px;
-  padding:14px;
-  box-shadow:0 8px 24px rgba(0,0,0,.06);
+  padding:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
 }
 .city-card strong{
-  font-size:16px;
+  font-size:15px;
 }
 .city-card span{
   display:block;
@@ -169,7 +179,7 @@ header p{
 /* ===== FOOTER ===== */
 footer{
   text-align:center;
-  margin:40px 0 20px;
+  margin:30px 0 16px;
   font-size:13px;
   color:var(--muted);
 }
@@ -179,21 +189,26 @@ footer{
 <body>
 
 <header>
-  <h1>Uzbekistan Cities</h1>
+  <h1>Uzbekistan Weather</h1>
   <p id="time"></p>
-  <div class="city-bar" id="quickBar"></div>
+  <div class="city-pills" id="pills"></div>
 </header>
 
 <div class="map-wrap">
-  <div class="map-bg">
+  <div class="map" id="map">
     <object data="/uzbekistan.svg" type="image/svg+xml"></object>
   </div>
+</div>
 
-  <div class="card" id="infoCard"></div>
+<div class="panel">
+  <div class="panel-inner" id="panel">
+    <h2 id="panelTitle">Выберите город</h2>
+    <div class="panel-note">Нажмите на точку на карте или выберите город выше.</div>
+  </div>
 </div>
 
 <section class="popular">
-  <h2>Popular Cities</h2>
+  <h3>Popular Cities</h3>
   <div class="popular-grid" id="popular"></div>
 </section>
 
@@ -218,34 +233,35 @@ const cities = [
   {key:"fergana", name:"Fergana", lat:40.3864, lon:71.7864, x:70, y:44}
 ];
 
-const mapWrap = document.querySelector(".map-wrap");
-const card = document.getElementById("infoCard");
-const quickBar = document.getElementById("quickBar");
-const popular = document.getElementById("popular");
+let selectedKey = null;
 
-/* ===== QUICK BAR ===== */
-cities.slice(0,4).forEach(function(c){
-  const pill = document.createElement("div");
-  pill.className = "city-pill";
-  pill.textContent = c.name;
-  quickBar.appendChild(pill);
+const mapEl = document.getElementById("map");
+const pillsEl = document.getElementById("pills");
+const panelEl = document.getElementById("panel");
+const popularEl = document.getElementById("popular");
+
+/* ===== PILLS ===== */
+cities.forEach(function(c){
+  const p = document.createElement("div");
+  p.className = "pill";
+  p.textContent = c.name;
+  p.onclick = function(){ selectCity(c.key); };
+  pillsEl.appendChild(p);
 });
 
 /* ===== POPULAR ===== */
 cities.forEach(function(c){
-  const el = document.createElement("div");
-  el.className = "city-card";
-
-  const title = document.createElement("strong");
-  title.textContent = c.name;
-
-  const info = document.createElement("span");
-  info.id = "p-" + c.key;
-  info.textContent = "Loading…";
-
-  el.appendChild(title);
-  el.appendChild(info);
-  popular.appendChild(el);
+  const card = document.createElement("div");
+  card.className = "city-card";
+  const t = document.createElement("strong");
+  t.textContent = c.name;
+  const s = document.createElement("span");
+  s.id = "pop-" + c.key;
+  s.textContent = "Loading…";
+  card.appendChild(t);
+  card.appendChild(s);
+  card.onclick = function(){ selectCity(c.key); };
+  popularEl.appendChild(card);
 });
 
 /* ===== DOTS ===== */
@@ -258,54 +274,81 @@ cities.forEach(function(c){
   const dot = document.createElement("div");
   dot.className = "dot";
 
-  const label = document.createElement("span");
-  label.textContent = c.name;
-
   d.appendChild(dot);
-  d.appendChild(label);
-  d.onclick = function(){ showCity(c, d); };
+  d.onclick = function(){ selectCity(c.key); };
 
-  mapWrap.appendChild(d);
+  mapEl.appendChild(d);
 });
 
-/* ===== CARD ===== */
-async function showCity(c, el){
+/* ===== SELECT ===== */
+async function selectCity(key){
+  if(selectedKey === key) return;
+  selectedKey = key;
+
+  // active states
+  Array.from(document.querySelectorAll(".pill")).forEach(function(p){
+    p.classList.toggle("active", p.textContent === cityByKey(key).name);
+  });
+  Array.from(document.querySelectorAll(".city-dot")).forEach(function(d,i){
+    d.classList.toggle("active", cities[i].key === key);
+  });
+
+  const c = cityByKey(key);
   const r = await fetch("/api?lat="+c.lat+"&lon="+c.lon).then(function(r){return r.json();});
 
-  card.innerHTML = "";
-  const h = document.createElement("h3");
+  renderPanel(c, r);
+  const pop = document.getElementById("pop-"+key);
+  if(pop) pop.textContent = Math.round(r.temp) + "° · " + (r.air.aqi<=2?"Good":"Moderate");
+}
+
+function cityByKey(key){
+  return cities.filter(function(c){ return c.key === key; })[0];
+}
+
+/* ===== PANEL ===== */
+function renderPanel(c, r){
+  panelEl.innerHTML = "";
+
+  const h = document.createElement("h2");
+  h.id = "panelTitle";
   h.textContent = c.name;
 
-  const t = document.createElement("div");
-  t.className = "temp";
-  t.textContent = Math.round(r.temp) + "°";
+  const s1 = stat("Температура", Math.round(r.temp) + "°");
+  const s2 = stat("Ощущается", Math.round(r.feels) + "°");
+  const s3 = stat("Ветер", r.wind + " м/с");
+  const s4 = stat("Воздух", r.air.aqi<=2 ? "Хороший" : "Средний");
 
+  const note = document.createElement("div");
+  note.className = "panel-note";
+  note.textContent =
+    r.temp < 5 ? "Холодно, нужна тёплая одежда." :
+    r.temp < 15 ? "Прохладно, комфортно для прогулок." :
+    "Тёплая и комфортная погода.";
+
+  panelEl.appendChild(h);
+  panelEl.appendChild(s1);
+  panelEl.appendChild(s2);
+  panelEl.appendChild(s3);
+  panelEl.appendChild(s4);
+  panelEl.appendChild(note);
+}
+
+function stat(label, value){
   const d = document.createElement("div");
-  d.className = "desc";
-  d.textContent = r.temp > 20 ? "Sunny" : "Cloudy";
-
-  const m = document.createElement("div");
-  m.className = "meta";
-  m.textContent = "Air: " + (r.air.aqi<=2?"Good":"Moderate") + " · Wind: " + r.wind + " m/s";
-
-  card.appendChild(h);
-  card.appendChild(t);
-  card.appendChild(d);
-  card.appendChild(m);
-
-  card.style.left = (el.offsetLeft + 20) + "px";
-  card.style.top = (el.offsetTop - 10) + "px";
-  card.style.display = "block";
-
-  const p = document.getElementById("p-"+c.key);
-  if(p) p.textContent = Math.round(r.temp)+"° · "+(r.air.aqi<=2?"Good":"Moderate");
+  d.className = "stat";
+  const s = document.createElement("span");
+  s.textContent = label;
+  const v = document.createElement("strong");
+  v.textContent = value;
+  d.appendChild(s);
+  d.appendChild(v);
+  return d;
 }
 </script>
 
 </body>
 </html>
 `;
-
 /* ================= DATA ================= */
 async function getData(lat, lon) {
   const w = await fetch(
