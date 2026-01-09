@@ -13,25 +13,18 @@ const HTML = `
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>Погода в Узбекистане</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8" />
+<title>Uzbekistan Weather</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <style>
 :root{
-  --bg:#f5f6f7;
+  --bg:#f6f7f9;
   --card:#ffffff;
-  --text:#0b0b0c;
+  --text:#111827;
   --muted:#6b7280;
-  --accent:#007aff;
-}
-
-body.night{
-  --bg:#0b0c0f;
-  --card:#111216;
-  --text:#f5f5f7;
-  --muted:#9ca3af;
-  --accent:#0a84ff;
+  --accent:#3b82f6;
+  --good:#16a34a;
 }
 
 *{box-sizing:border-box}
@@ -41,121 +34,145 @@ body{
   font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto;
   background:var(--bg);
   color:var(--text);
-  transition:background .4s,color .4s;
 }
 
+/* ===== HEADER ===== */
 header{
-  padding:32px 20px 16px;
+  padding:28px 16px 12px;
   text-align:center;
 }
 header h1{
   margin:0;
-  font-size:28px;
+  font-size:26px;
   font-weight:600;
 }
 header p{
-  margin:8px 0 0;
+  margin-top:6px;
+  font-size:14px;
   color:var(--muted);
 }
 
-main{
-  max-width:720px;
-  margin:0 auto;
-  padding:0 16px 40px;
+/* ===== CITY BAR ===== */
+.city-bar{
   display:flex;
-  flex-direction:column;
-  gap:20px;
+  gap:12px;
+  justify-content:center;
+  margin-top:16px;
+}
+.city-pill{
+  background:var(--card);
+  border-radius:14px;
+  padding:10px 14px;
+  font-size:14px;
+  box-shadow:0 8px 24px rgba(0,0,0,.06);
 }
 
-.hero{
+/* ===== MAP SECTION ===== */
+.map-wrap{
+  position:relative;
+  margin:20px auto 0;
+  max-width:900px;
+  padding:0 12px;
+}
+.map-bg{
   background:var(--card);
   border-radius:24px;
-  padding:28px;
-  text-align:center;
+  padding:16px;
 }
-.hero .temp{
-  font-size:72px;
-  font-weight:300;
-}
-.hero .desc{
-  margin-top:6px;
-  font-size:18px;
-  color:var(--muted);
-}
-.hero .feels{
-  font-size:15px;
-  color:var(--muted);
+.map-bg object{
+  width:100%;
+  height:420px;
+  opacity:.9;
 }
 
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
+/* ===== CITY DOTS ===== */
+.city-dot{
+  position:absolute;
+  transform:translate(-50%,-50%);
+  cursor:pointer;
 }
-.stat{
+.city-dot .dot{
+  width:14px;
+  height:14px;
+  background:var(--accent);
+  border-radius:50%;
+  box-shadow:0 0 0 6px rgba(59,130,246,.15);
+}
+.city-dot span{
+  display:block;
+  margin-top:6px;
+  font-size:13px;
+  color:#1f2937;
+  white-space:nowrap;
+}
+
+/* ===== FLOAT CARD ===== */
+.card{
+  position:absolute;
   background:var(--card);
   border-radius:18px;
   padding:16px;
+  width:220px;
+  box-shadow:0 20px 40px rgba(0,0,0,.15);
+  display:none;
+  z-index:10;
 }
-.stat span{
-  display:block;
-  font-size:13px;
+.card h3{
+  margin:0;
+  font-size:16px;
+}
+.card .temp{
+  font-size:32px;
+  font-weight:500;
+  margin:6px 0;
+}
+.card .desc{
+  font-size:14px;
   color:var(--muted);
 }
-.stat strong{
-  font-size:20px;
-  font-weight:500;
-}
-
-.select-wrap{
-  display:flex;
-  justify-content:center;
-}
-select{
-  padding:10px 14px;
-  font-size:16px;
-  border-radius:12px;
-  border:1px solid #d1d5db;
-  background:var(--card);
-  color:var(--text);
-}
-
-/* ===== MAP ===== */
-.map{
-  background:var(--card);
-  border-radius:24px;
-  padding:20px;
-}
-svg{
-  width:100%;
-  height:300px;
-}
-.country{
-  fill:#e5e7eb;
-  stroke:#c7cdd8;
-  stroke-width:1.5;
-}
-.city-dot{
-  fill:var(--accent);
-}
-.city-label{
+.card .meta{
+  margin-top:10px;
   font-size:13px;
-  fill:var(--text);
-  dominant-baseline:middle;
+  color:#374151;
 }
 
-.chart{
+/* ===== POPULAR ===== */
+.popular{
+  max-width:900px;
+  margin:40px auto 0;
+  padding:0 16px;
+}
+.popular h2{
+  font-size:18px;
+  margin-bottom:12px;
+}
+.popular-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:14px;
+}
+.city-card{
   background:var(--card);
-  border-radius:24px;
-  padding:16px;
+  border-radius:16px;
+  padding:14px;
+  box-shadow:0 8px 24px rgba(0,0,0,.06);
 }
-canvas{width:100%;height:200px}
+.city-card strong{
+  font-size:16px;
+}
+.city-card span{
+  display:block;
+  margin-top:6px;
+  font-size:14px;
+  color:var(--muted);
+}
 
+/* ===== FOOTER ===== */
 footer{
   text-align:center;
+  margin:40px 0 20px;
   font-size:13px;
   color:var(--muted);
-  margin-top:20px;
 }
 </style>
 </head>
@@ -163,121 +180,96 @@ footer{
 <body>
 
 <header>
-  <h1 id="cityName">Ташкент</h1>
+  <h1>Uzbekistan Cities</h1>
   <p id="time"></p>
+
+  <div class="city-bar" id="quickBar"></div>
 </header>
 
-<main>
+<div class="map-wrap">
+  <div class="map-bg">
+    <object data="/uzbekistan.svg" type="image/svg+xml"></object>
+  </div>
 
-<div class="select-wrap">
-  <select id="city"></select>
+  <!-- FLOAT CARD -->
+  <div class="card" id="infoCard"></div>
+
+  <!-- DOTS -->
 </div>
 
-<div class="hero">
-  <div class="temp" id="temp">—°</div>
-  <div class="desc" id="desc">Загрузка…</div>
-  <div class="feels" id="feels"></div>
-</div>
-
-<div class="grid">
-  <div class="stat"><span>Ветер</span><strong id="wind">—</strong></div>
-  <div class="stat"><span>Влажность</span><strong id="humidity">—</strong></div>
-  <div class="stat"><span>Давление</span><strong id="pressure">—</strong></div>
-  <div class="stat"><span>Качество воздуха</span><strong id="air">—</strong></div>
-</div>
-
-<div class="map">
-<svg viewBox="0 0 600 320">
-  <!-- Реальный контур Узбекистана (облегчённый, корректный) -->
-  <path class="country"
-    d="M60 150 L110 95 L200 75 L300 70 L380 90 L460 85
-       L540 135 L560 175 L520 215 L440 230 L360 255
-       L260 250 L180 265 L120 235 L80 195 Z"/>
-
-  <!-- Города -->
-  <g>
-    <circle class="city-dot" cx="330" cy="105" r="6"/><text class="city-label" x="342" y="105">Ташкент</text>
-    <circle class="city-dot" cx="270" cy="175" r="6"/><text class="city-label" x="282" y="175">Самарканд</text>
-    <circle class="city-dot" cx="205" cy="165" r="6"/><text class="city-label" x="217" y="165">Бухара</text>
-    <circle class="city-dot" cx="390" cy="130" r="6"/><text class="city-label" x="402" y="130">Андижан</text>
-    <circle class="city-dot" cx="360" cy="120" r="6"/><text class="city-label" x="372" y="120">Наманган</text>
-    <circle class="city-dot" cx="140" cy="130" r="6"/><text class="city-label" x="152" y="130">Нукус</text>
-  </g>
-</svg>
-</div>
-
-<div class="chart">
-  <canvas id="chart"></canvas>
-</div>
-
-</main>
+<section class="popular">
+  <h2>Popular Cities</h2>
+  <div class="popular-grid" id="popular"></div>
+</section>
 
 <footer>
-Данные: OpenWeather · Обновление каждые 10 минут
+Real-time weather · Air quality · Uzbekistan
 </footer>
 
 <script>
+/* ===== TIME ===== */
 setInterval(()=>time.innerText=new Date().toLocaleString("ru-RU"),1000);
 
-const cities={
-  tashkent:{name:"Ташкент",lat:41.2995,lon:69.2401},
-  samarkand:{name:"Самарканд",lat:39.6542,lon:66.9597},
-  bukhara:{name:"Бухара",lat:39.7747,lon:64.4286},
-  andijan:{name:"Андижан",lat:40.7821,lon:72.3442},
-  namangan:{name:"Наманган",lat:40.9983,lon:71.6726},
-  nukus:{name:"Нукус",lat:42.4531,lon:59.6103}
-};
+/* ===== CITIES ===== */
+const cities=[
+  {key:"tashkent",name:"Tashkent",lat:41.2995,lon:69.2401,x:63,y:38},
+  {key:"samarkand",name:"Samarkand",lat:39.6542,lon:66.9597,x:50,y:52},
+  {key:"bukhara",name:"Bukhara",lat:39.7747,lon:64.4286,x:42,y:50},
+  {key:"khiva",name:"Khiva",lat:41.3890,lon:60.3422,x:30,y:40},
+  {key:"nukus",name:"Nukus",lat:42.4531,lon:59.6103,x:26,y:36},
+  {key:"fergana",name:"Fergana",lat:40.3864,lon:71.7864,x:70,y:44}
+];
 
-for(const k in cities){
-  city.innerHTML+=\`<option value="\${k}">\${cities[k].name}</option>\`;
-}
+const mapWrap=document.querySelector(".map-wrap");
+const card=document.getElementById("infoCard");
 
-async function loadCity(key){
-  const c=cities[key];
-  cityName.innerText=c.name;
-  localStorage.setItem("city",key);
+/* ===== DOTS ===== */
+cities.forEach(c=>{
+  const d=document.createElement("div");
+  d.className="city-dot";
+  d.style.left=c.x+"%";
+  d.style.top=c.y+"%";
+  d.innerHTML=`<div class="dot"></div><span>${c.name}</span>`;
+  d.onclick=()=>showCity(c,d);
+  mapWrap.appendChild(d);
+});
 
+/* ===== QUICK BAR ===== */
+cities.slice(0,4).forEach(c=>{
+  quickBar.innerHTML+=`<div class="city-pill">${c.name}</div>`;
+});
+
+/* ===== POPULAR ===== */
+cities.forEach(c=>{
+  popular.innerHTML+=`
+    <div class="city-card">
+      <strong>${c.name}</strong>
+      <span id="p-${c.key}">Loading…</span>
+    </div>`;
+});
+
+/* ===== SHOW CARD ===== */
+async function showCity(c,el){
   const r=await fetch("/api?lat="+c.lat+"&lon="+c.lon).then(r=>r.json());
 
-  document.body.classList.toggle("night",Date.now()<r.sunrise||Date.now()>r.sunset);
+  card.innerHTML=`
+    <h3>${c.name}</h3>
+    <div class="temp">${Math.round(r.temp)}°</div>
+    <div class="desc">${r.temp>20?"Sunny":"Cloudy"}</div>
+    <div class="meta">
+      Air: ${r.air.aqi<=2?"Good":"Moderate"}<br>
+      Wind: ${r.wind} m/s
+    </div>
+  `;
 
-  temp.innerText=Math.round(r.temp)+"°";
-  feels.innerText="Ощущается как "+Math.round(r.feels)+"°";
-  desc.innerText=r.temp>25?"Жарко":r.temp>15?"Комфортно":"Прохладно";
+  card.style.left=el.offsetLeft+20+"px";
+  card.style.top=el.offsetTop-10+"px";
+  card.style.display="block";
 
-  wind.innerText=r.wind+" м/с";
-  humidity.innerText=r.humidity+"%";
-  pressure.innerText=r.pressure_mm+" мм";
-  air.innerText=r.air.aqi<=2?"Хорошее":"Среднее";
-
-  drawChart(r.forecast);
+  document.getElementById("p-"+c.key).innerText=
+    Math.round(r.temp)+"° · "+(r.air.aqi<=2?"Good":"Moderate");
 }
-
-function drawChart(data){
-  if(!data) return;
-  const ctx=chart.getContext("2d");
-  chart.width=600;chart.height=200;
-  ctx.clearRect(0,0,600,200);
-
-  const temps=data.map(p=>p.temp);
-  const max=Math.max(...temps),min=Math.min(...temps);
-
-  ctx.strokeStyle="var(--accent)";
-  ctx.beginPath();
-  data.forEach((p,i)=>{
-    const x=i*(600/(data.length-1));
-    const y=160-((p.temp-min)/(max-min))*120;
-    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-  });
-  ctx.stroke();
-}
-
-city.onchange=()=>loadCity(city.value);
-const saved=localStorage.getItem("city")||"tashkent";
-city.value=saved;
-loadCity(saved);
 </script>
-
 </body>
 </html>
 `;
