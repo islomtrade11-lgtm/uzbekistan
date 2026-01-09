@@ -229,7 +229,15 @@ cities.forEach(c=>{
   d.className="city-dot";
   d.style.left=c.x+"%";
   d.style.top=c.y+"%";
-  d.innerHTML=`<div class="dot"></div><span>${c.name}</span>`;
+const dot = document.createElement("div");
+dot.className = "dot";
+
+const label = document.createElement("span");
+label.textContent = c.name;
+
+d.appendChild(dot);
+d.appendChild(label);
+
   d.onclick=()=>showCity(c,d);
   mapWrap.appendChild(d);
 });
@@ -241,11 +249,22 @@ cities.slice(0,4).forEach(c=>{
 
 /* ===== POPULAR ===== */
 cities.forEach(c=>{
-  popular.innerHTML+=`
-    <div class="city-card">
-      <strong>${c.name}</strong>
-      <span id="p-${c.key}">Loading…</span>
-    </div>`;
+  const d = document.createElement("div");
+  d.className = "city-dot";
+  d.style.left = c.x + "%";
+  d.style.top = c.y + "%";
+
+  const dot = document.createElement("div");
+  dot.className = "dot";
+
+  const label = document.createElement("span");
+  label.textContent = c.name;
+
+  d.appendChild(dot);
+  d.appendChild(label);
+
+  d.onclick = () => showCity(c, d);
+  mapWrap.appendChild(d);
 });
 
 /* ===== SHOW CARD ===== */
