@@ -9,7 +9,6 @@ if (!API_KEY) {
 }
 
 /* ================= HTML ================= */
-/* ================= HTML ================= */
 const HTML = `
 <!DOCTYPE html>
 <html lang="ru">
@@ -29,10 +28,12 @@ svg path:hover{fill:#38bdf8}
 .warn{color:#d97706;font-weight:600}
 .bad{color:#dc2626;font-weight:600}
 canvas{width:100%;height:240px}
-footer{text-align:center;font-size:13px;opacity:.7}
+footer{text-align:center;font-size:13px;opacity:.8}
 #summary ul li{margin-bottom:8px}
 select{padding:8px 12px;font-size:16px;border-radius:8px}
 .citybar{display:flex;gap:12px;align-items:center;justify-content:center;margin-top:10px}
+.muted{opacity:.75}
+.small{font-size:14px}
 </style>
 </head>
 
@@ -42,7 +43,6 @@ select{padding:8px 12px;font-size:16px;border-radius:8px}
   <h1>🇺🇿 Узбекистан — погода и экология</h1>
   <p id="time"></p>
 
-  <!-- ВЫБОР ГОРОДА -->
   <div class="citybar">
     <label for="city">Город:</label>
     <select id="city"></select>
@@ -53,6 +53,7 @@ select{padding:8px 12px;font-size:16px;border-radius:8px}
 <div class="card" id="summary" style="margin:20px auto;max-width:1200px">
   <h2 id="summaryTitle">Сейчас</h2>
   <ul id="summaryList" style="list-style:none;padding:0;font-size:18px"></ul>
+  <p class="small muted" id="updatedAt"></p>
 </div>
 
 <main>
@@ -67,30 +68,36 @@ select{padding:8px 12px;font-size:16px;border-radius:8px}
   <path d="M320 200 L300 130 L380 120 L450 160 L390 230 Z"
     onclick="selectCity('bukhara')"/>
 </svg>
-<p>Нажмите на область или выберите город</p>
+<p class="small muted">Можно выбрать город на карте или в списке выше</p>
 </div>
 
 <div class="card">
 <h2 id="region">Данные региона</h2>
 <div class="grid" id="weather"></div>
-<p id="weatherHuman"></p>
+<p id="weatherHuman" class="muted"></p>
 </div>
 
 <div class="card">
 <h2>🌫 Экология</h2>
 <p id="air"></p>
 <p id="airHuman"></p>
+<p id="airExplain" class="small muted"></p>
 </div>
 
 <div class="card">
 <h2>📊 Температура на 24 часа</h2>
 <canvas id="chart"></canvas>
+<p id="forecastText" class="small muted"></p>
 </div>
 
 </main>
 
 <footer>
-Реальные данные · Обновляется автоматически · Fly.io
+<p>
+Данные обновляются каждые 10 минут.<br>
+Источник: OpenWeather.<br>
+Цель сайта — простые и честные ответы для повседневной жизни.
+</p>
 </footer>
 
 <script>
@@ -101,35 +108,51 @@ setInterval(function(){
 },1000);
 
 /* ===== ГОРОДА ===== */
-const cities = {
-  tashkent: { name:"Ташкент", lat:41.2995, lon:69.2401 },
-  samarkand:{ name:"Самарканд", lat:39.6542, lon:66.9597 },
-  bukhara:  { name:"Бухара", lat:39.7747, lon:64.4286 }
+const cities={
+  tashkent:{name:"Ташкент",lat:41.2995,lon:69.2401},
+  samarkand:{name:"Самарканд",lat:39.6542,lon:66.9597},
+  bukhara:{name:"Бухара",lat:39.7747,lon:64.4286}
 };
 
 /* ===== СЕЛЕКТОР ===== */
-const select = document.getElementById("city");
-for (const k in cities) {
-  const o = document.createElement("option");
-  o.value = k;
-  o.textContent = cities[k].name;
+const select=document.getElementById("city");
+for(const k in cities){
+  const o=document.createElement("option");
+  o.value=k;o.textContent=cities[k].name;
   select.appendChild(o);
 }
 
 /* ===== ЧЕЛОВЕЧЕСКИЙ ВЫВОД ===== */
 function buildSummary(r){
   const list=[];
-  if(r.temp<0) list.push("❄️ Очень холодно — риск переохлаждения");
+  if(r.temp<0) list.push("❄️ Очень холодно — высокий риск переохлаждения");
   else if(r.temp<10) list.push("🧥 Холодно — нужна тёплая одежда");
   else if(r.temp<20) list.push("🧣 Прохладно — лёгкая куртка");
   else if(r.temp<30) list.push("😊 Комфортная температура");
-  else list.push("🔥 Жарко — избегайте солнца");
+  else list.push("🔥 Жарко — старайтесь быть в тени");
 
   if(r.air.aqi<=2) list.push("🌫 Воздух безопасен для прогулок");
-  else if(r.air.aqi==3) list.push("⚠️ Воздух средний — осторожно");
-  else list.push("🚫 Плохой воздух — лучше остаться дома");
+  else if(r.air.aqi==3) list.push("⚠️ Качество воздуха среднее — лучше без интенсивных нагрузок");
+  else list.push("🚫 Плохой воздух — прогулки лучше отложить");
 
   return list;
+}
+
+/* ===== ПОЯСНЕНИЯ ===== */
+function explainAir(r){
+  if(r.air.aqi<=2)
+    return "Уровень загрязнения низкий. Большинству людей можно спокойно находиться на улице.";
+  if(r.air.aqi==3)
+    return "Допустимый уровень, но детям, пожилым и людям с астмой лучше быть осторожнее.";
+  return "Высокий уровень загрязнения. По возможности оставайтесь в помещении.";
+}
+
+function forecastText(arr){
+  if(arr[arr.length-1]>arr[0])
+    return "В ближайшие часы ожидается потепление.";
+  if(arr[arr.length-1]<arr[0])
+    return "В ближайшие часы станет прохладнее.";
+  return "Температура будет стабильной в течение суток.";
 }
 
 /* ===== ЗАГРУЗКА ===== */
@@ -145,6 +168,9 @@ async function loadCity(key){
   document.getElementById("summaryList").innerHTML =
     buildSummary(r).map(t=>"<li>"+t+"</li>").join("");
 
+  document.getElementById("updatedAt").innerText =
+    "Обновлено только что";
+
   document.getElementById("weather").innerHTML =
     "<div>🌡 "+r.temp+" °C</div>"+
     "<div>🤗 "+r.feels+" °C</div>"+
@@ -153,13 +179,23 @@ async function loadCity(key){
     "<div>🌬 "+r.wind+" м/с</div>"+
     "<div>👁 "+r.visibility_km+" км</div>";
 
+  document.getElementById("weatherHuman").innerText =
+    r.temp<10?"На улице холодно — одевайтесь теплее.":
+    r.temp<20?"Прохладно, комфортно для прогулок.":
+    "Погода комфортная.";
+
   document.getElementById("air").innerText =
     "AQI "+r.air.aqi+", PM2.5 "+r.air.pm25+" µg/m³";
 
   document.getElementById("airHuman").innerHTML =
-    r.air.aqi<=2?"<span class='good'>Воздух безопасен</span>":
-    r.air.aqi==3?"<span class='warn'>Лучше осторожно</span>":
-    "<span class='bad'>Лучше остаться дома</span>";
+    r.air.aqi<=2?"<span class='good'>Качество воздуха хорошее</span>":
+    r.air.aqi==3?"<span class='warn'>Качество воздуха среднее</span>":
+    "<span class='bad'>Качество воздуха плохое</span>";
+
+  document.getElementById("airExplain").innerText = explainAir(r);
+
+  document.getElementById("forecastText").innerText =
+    forecastText(r.forecast);
 
   drawChart(r.forecast);
 }
@@ -171,9 +207,8 @@ function selectCity(key){
 }
 
 /* ===== СТАРТ ===== */
-select.onchange=function(){ loadCity(this.value); };
-
-const saved = localStorage.getItem("city") || "tashkent";
+select.onchange=function(){loadCity(this.value);};
+const saved=localStorage.getItem("city")||"tashkent";
 select.value=saved;
 loadCity(saved);
 
