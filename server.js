@@ -29,14 +29,22 @@ svg path:hover{fill:#38bdf8}
 .bad{color:#dc2626;font-weight:600}
 canvas{width:100%;height:240px}
 footer{text-align:center;font-size:13px;opacity:.7}
+#summary ul li{margin-bottom:8px}
 </style>
 </head>
+
 <body>
 
 <header>
   <h1>🇺🇿 Узбекистан — погода и экология</h1>
   <p id="time"></p>
 </header>
+
+<!-- ГЛАВНЫЙ ВЫВОД -->
+<div class="card" id="summary" style="margin:20px auto;max-width:1200px">
+  <h2 id="summaryTitle">Сейчас</h2>
+  <ul id="summaryList" style="list-style:none;padding:0;font-size:18px"></ul>
+</div>
 
 <main>
 
@@ -77,16 +85,60 @@ footer{text-align:center;font-size:13px;opacity:.7}
 </footer>
 
 <script>
+/* ===== ВРЕМЯ ===== */
 setInterval(function(){
   document.getElementById("time").innerText =
     new Date().toLocaleString("ru-RU");
 },1000);
 
+/* ===== ЧЕЛОВЕЧЕСКИЙ ВЫВОД ===== */
+function buildSummary(r){
+  const list = [];
+
+  if (r.temp < 0) {
+    list.push("❄️ Очень холодно — высокий риск переохлаждения");
+  } else if (r.temp < 10) {
+    list.push("🧥 Холодно — нужна тёплая одежда");
+  } else if (r.temp < 20) {
+    list.push("🧣 Прохладно — лёгкая куртка");
+  } else if (r.temp < 30) {
+    list.push("😊 Комфортная температура");
+  } else {
+    list.push("🔥 Жарко — избегайте солнца");
+  }
+
+  if (r.wind > 7) {
+    list.push("🌬 Сильный ветер — на улице некомфортно");
+  }
+
+  if (r.air.aqi <= 2) {
+    list.push("🌫 Воздух безопасен для прогулок");
+  } else if (r.air.aqi === 3) {
+    list.push("⚠️ Воздух средний — чувствительным лучше осторожно");
+  } else {
+    list.push("🚫 Плохой воздух — лучше остаться дома");
+  }
+
+  return list;
+}
+
+/* ===== ЗАГРУЗКА РЕГИОНА ===== */
 async function loadRegion(name,lat,lon){
-  document.getElementById("region").innerText=name;
+  document.getElementById("region").innerText = name;
 
   const r = await fetch("/api?lat="+lat+"&lon="+lon).then(r=>r.json());
 
+  // главный вывод
+  document.getElementById("summaryTitle").innerText =
+    "Сейчас в " + name;
+
+  const summary = buildSummary(r);
+  document.getElementById("summaryList").innerHTML =
+    summary.map(function(t){
+      return "<li>"+t+"</li>";
+    }).join("");
+
+  // погода
   document.getElementById("weather").innerHTML =
     "<div>🌡 "+r.temp+" °C</div>"+
     "<div>🤗 "+r.feels+" °C</div>"+
@@ -102,6 +154,7 @@ async function loadRegion(name,lat,lon){
     r.temp<30?"Тепло, отличная погода":
     "Жарко, избегайте солнца";
 
+  // экология
   document.getElementById("air").innerText =
     "AQI "+r.air.aqi+", PM2.5 "+r.air.pm25+" µg/m³";
 
@@ -113,6 +166,7 @@ async function loadRegion(name,lat,lon){
   drawChart(r.forecast);
 }
 
+/* ===== ГРАФИК ===== */
 function drawChart(data){
   const c=document.getElementById("chart");
   const ctx=c.getContext("2d");
