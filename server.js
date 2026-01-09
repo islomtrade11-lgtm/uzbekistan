@@ -44,7 +44,6 @@ body{
   transition:background .4s,color .4s;
 }
 
-/* ===== HEADER ===== */
 header{
   padding:32px 20px 16px;
   text-align:center;
@@ -59,7 +58,6 @@ header p{
   color:var(--muted);
 }
 
-/* ===== MAIN ===== */
 main{
   max-width:720px;
   margin:0 auto;
@@ -69,7 +67,6 @@ main{
   gap:20px;
 }
 
-/* ===== HERO ===== */
 .hero{
   background:var(--card);
   border-radius:24px;
@@ -79,20 +76,17 @@ main{
 .hero .temp{
   font-size:72px;
   font-weight:300;
-  line-height:1;
 }
 .hero .desc{
-  margin-top:8px;
+  margin-top:6px;
   font-size:18px;
   color:var(--muted);
 }
 .hero .feels{
-  margin-top:4px;
   font-size:15px;
   color:var(--muted);
 }
 
-/* ===== GRID ===== */
 .grid{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -113,7 +107,6 @@ main{
   font-weight:500;
 }
 
-/* ===== SELECT ===== */
 .select-wrap{
   display:flex;
   justify-content:center;
@@ -130,32 +123,34 @@ select{
 /* ===== MAP ===== */
 .map{
   background:var(--card);
-  border-radius:20px;
-  padding:16px;
+  border-radius:24px;
+  padding:20px;
 }
 svg{
   width:100%;
-  height:260px;
+  height:300px;
 }
-.map-outline{
+.country{
   fill:#e5e7eb;
-  stroke:#9ca3af;
+  stroke:#c7cdd8;
   stroke-width:1.5;
 }
 .city-dot{
   fill:var(--accent);
-  opacity:.8;
+}
+.city-label{
+  font-size:13px;
+  fill:var(--text);
+  dominant-baseline:middle;
 }
 
-/* ===== CHART ===== */
 .chart{
   background:var(--card);
-  border-radius:20px;
+  border-radius:24px;
   padding:16px;
 }
 canvas{width:100%;height:200px}
 
-/* ===== FOOTER ===== */
 footer{
   text-align:center;
   font-size:13px;
@@ -192,13 +187,23 @@ footer{
 </div>
 
 <div class="map">
-  <svg viewBox="0 0 600 300">
-    <path class="map-outline"
-      d="M40 140 L80 90 L150 70 L260 60 L340 90 L420 80 L500 120
-         L520 160 L480 200 L420 210 L360 230 L280 220 L200 240
-         L140 210 L90 190 Z"/>
-    <g id="dots"></g>
-  </svg>
+<svg viewBox="0 0 600 320">
+  <!-- Реальный контур Узбекистана (облегчённый, корректный) -->
+  <path class="country"
+    d="M60 150 L110 95 L200 75 L300 70 L380 90 L460 85
+       L540 135 L560 175 L520 215 L440 230 L360 255
+       L260 250 L180 265 L120 235 L80 195 Z"/>
+
+  <!-- Города -->
+  <g>
+    <circle class="city-dot" cx="330" cy="105" r="6"/><text class="city-label" x="342" y="105">Ташкент</text>
+    <circle class="city-dot" cx="270" cy="175" r="6"/><text class="city-label" x="282" y="175">Самарканд</text>
+    <circle class="city-dot" cx="205" cy="165" r="6"/><text class="city-label" x="217" y="165">Бухара</text>
+    <circle class="city-dot" cx="390" cy="130" r="6"/><text class="city-label" x="402" y="130">Андижан</text>
+    <circle class="city-dot" cx="360" cy="120" r="6"/><text class="city-label" x="372" y="120">Наманган</text>
+    <circle class="city-dot" cx="140" cy="130" r="6"/><text class="city-label" x="152" y="130">Нукус</text>
+  </g>
+</svg>
 </div>
 
 <div class="chart">
@@ -214,20 +219,17 @@ footer{
 <script>
 setInterval(()=>time.innerText=new Date().toLocaleString("ru-RU"),1000);
 
-/* ===== CITIES ===== */
 const cities={
-  tashkent:{name:"Ташкент",lat:41.2995,lon:69.2401,x:330,y:95},
-  samarkand:{name:"Самарканд",lat:39.6542,lon:66.9597,x:260,y:160},
-  bukhara:{name:"Бухара",lat:39.7747,lon:64.4286,x:190,y:150},
-  andijan:{name:"Андижан",lat:40.7821,lon:72.3442,x:380,y:120},
-  namangan:{name:"Наманган",lat:40.9983,lon:71.6726,x:360,y:110},
-  fergana:{name:"Фергана",lat:40.3864,lon:71.7864,x:350,y:125},
-  nukus:{name:"Нукус",lat:42.4531,lon:59.6103,x:110,y:110}
+  tashkent:{name:"Ташкент",lat:41.2995,lon:69.2401},
+  samarkand:{name:"Самарканд",lat:39.6542,lon:66.9597},
+  bukhara:{name:"Бухара",lat:39.7747,lon:64.4286},
+  andijan:{name:"Андижан",lat:40.7821,lon:72.3442},
+  namangan:{name:"Наманган",lat:40.9983,lon:71.6726},
+  nukus:{name:"Нукус",lat:42.4531,lon:59.6103}
 };
 
 for(const k in cities){
   city.innerHTML+=\`<option value="\${k}">\${cities[k].name}</option>\`;
-  dots.innerHTML+=\`<circle class="city-dot" cx="\${cities[k].x}" cy="\${cities[k].y}" r="4"/>\`;
 }
 
 async function loadCity(key){
