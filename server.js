@@ -14,100 +14,153 @@ const HTML = `
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Узбекистан — погода и экология</title>
+<title>Погода в Узбекистане</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 :root{
-  --bg:#f4f6f8;
+  --bg:#f5f6f7;
   --card:#ffffff;
-  --text:#0f172a;
-  --accent:#2563eb;
+  --text:#0b0b0c;
+  --muted:#6b7280;
+  --accent:#007aff;
 }
+
 body.night{
-  --bg:#020617;
-  --card:#020617;
-  --text:#e5e7eb;
-  --accent:#38bdf8;
+  --bg:#0b0c0f;
+  --card:#111216;
+  --text:#f5f5f7;
+  --muted:#9ca3af;
+  --accent:#0a84ff;
 }
+
+*{box-sizing:border-box}
+
 body{
   margin:0;
-  font-family:system-ui;
+  font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto;
   background:var(--bg);
   color:var(--text);
-  transition:background .5s,color .5s;
+  transition:background .4s,color .4s;
 }
+
+/* ===== HEADER ===== */
 header{
-  background:linear-gradient(135deg,#2563eb,#16a34a);
-  color:#fff;
-  padding:20px;
+  padding:32px 20px 16px;
   text-align:center;
 }
+header h1{
+  margin:0;
+  font-size:28px;
+  font-weight:600;
+}
+header p{
+  margin:8px 0 0;
+  color:var(--muted);
+}
+
+/* ===== MAIN ===== */
 main{
-  max-width:1200px;
-  margin:auto;
-  padding:20px;
-  display:grid;
+  max-width:720px;
+  margin:0 auto;
+  padding:0 16px 40px;
+  display:flex;
+  flex-direction:column;
   gap:20px;
 }
-.card{
-  background:var(--card);
-  border-radius:16px;
-  padding:20px;
-  box-shadow:0 10px 20px rgba(0,0,0,.15);
-}
-.citybar{display:flex;gap:12px;justify-content:center;margin-top:10px}
-select{padding:8px 12px;font-size:16px;border-radius:8px}
 
-.small{font-size:14px;opacity:.75}
-.good{color:#16a34a;font-weight:600}
-.warn{color:#d97706;font-weight:600}
-.bad{color:#dc2626;font-weight:600}
+/* ===== HERO ===== */
+.hero{
+  background:var(--card);
+  border-radius:24px;
+  padding:28px;
+  text-align:center;
+}
+.hero .temp{
+  font-size:72px;
+  font-weight:300;
+  line-height:1;
+}
+.hero .desc{
+  margin-top:8px;
+  font-size:18px;
+  color:var(--muted);
+}
+.hero .feels{
+  margin-top:4px;
+  font-size:15px;
+  color:var(--muted);
+}
+
+/* ===== GRID ===== */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.stat{
+  background:var(--card);
+  border-radius:18px;
+  padding:16px;
+}
+.stat span{
+  display:block;
+  font-size:13px;
+  color:var(--muted);
+}
+.stat strong{
+  font-size:20px;
+  font-weight:500;
+}
+
+/* ===== SELECT ===== */
+.select-wrap{
+  display:flex;
+  justify-content:center;
+}
+select{
+  padding:10px 14px;
+  font-size:16px;
+  border-radius:12px;
+  border:1px solid #d1d5db;
+  background:var(--card);
+  color:var(--text);
+}
 
 /* ===== MAP ===== */
-.map-wrap{position:relative;overflow:hidden;border-radius:12px}
-#map{width:100%;height:360px}
-.map-outline{fill:#e0e7ff;stroke:#1e293b;stroke-width:2}
-
-/* heatmap */
-.heat-cold{fill:#93c5fd}
-.heat-cool{fill:#bfdbfe}
-.heat-warm{fill:#fde68a}
-.heat-hot{fill:#fca5a5}
-
-/* cities */
-.city-dot{fill:#2563eb;cursor:pointer}
-.city-dot.active{fill:#dc2626}
-.city-label{font-size:10px;pointer-events:none}
-
-/* wind */
-.wind-arrow{
-  stroke:#0f172a;
-  stroke-width:2;
-  opacity:.7;
-  marker-end:url(#arrow);
+.map{
+  background:var(--card);
+  border-radius:20px;
+  padding:16px;
+}
+svg{
+  width:100%;
+  height:260px;
+}
+.map-outline{
+  fill:#e5e7eb;
+  stroke:#9ca3af;
+  stroke-width:1.5;
+}
+.city-dot{
+  fill:var(--accent);
+  opacity:.8;
 }
 
-/* layers */
-.layers{
-  display:flex;
-  gap:16px;
-  margin-bottom:10px;
-  font-size:14px;
+/* ===== CHART ===== */
+.chart{
+  background:var(--card);
+  border-radius:20px;
+  padding:16px;
 }
+canvas{width:100%;height:200px}
 
-/* chart */
-canvas{width:100%;height:260px}
-
-#tooltip{
-  position:absolute;
-  background:#000;
-  color:#fff;
-  padding:6px 8px;
-  border-radius:6px;
+/* ===== FOOTER ===== */
+footer{
+  text-align:center;
   font-size:13px;
-  display:none;
-  pointer-events:none;
+  color:var(--muted);
+  margin-top:20px;
 }
 </style>
 </head>
@@ -115,80 +168,53 @@ canvas{width:100%;height:260px}
 <body>
 
 <header>
-  <h1>🇺🇿 Узбекистан — погода и экология</h1>
+  <h1 id="cityName">Ташкент</h1>
   <p id="time"></p>
-  <div class="citybar">
-    <label>Город:</label>
-    <select id="city"></select>
-  </div>
 </header>
-
-<div class="card" id="summary" style="margin:20px auto;max-width:1200px">
-  <h2 id="summaryTitle">Сейчас</h2>
-  <ul id="summaryList" style="list-style:none;padding:0;font-size:18px"></ul>
-  <p class="small" id="updatedAt"></p>
-</div>
 
 <main>
 
-<!-- ===== MAP ===== -->
-<div class="card">
-<h2>🗺 Карта Узбекистана</h2>
-
-<div class="layers">
-  <label><input type="checkbox" id="toggleHeat" checked> Температура</label>
-  <label><input type="checkbox" id="toggleWind" checked> Ветер</label>
+<div class="select-wrap">
+  <select id="city"></select>
 </div>
 
-<div class="map-wrap">
-<svg id="map" viewBox="0 0 600 300">
-
-<defs>
-<marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3"
-  orient="auto">
-  <path d="M0,0 L0,6 L9,3 z" fill="#0f172a"/>
-</marker>
-</defs>
-
-<!-- outline -->
-<path id="heatmap" class="map-outline"
-  d="M40 140 L80 90 L150 70 L260 60 L340 90 L420 80 L500 120
-     L520 160 L480 200 L420 210 L360 230 L280 220 L200 240
-     L140 210 L90 190 Z"/>
-
-<!-- cities -->
-<g id="citiesLayer"></g>
-
-<!-- wind -->
-<g id="windLayer"></g>
-
-</svg>
+<div class="hero">
+  <div class="temp" id="temp">—°</div>
+  <div class="desc" id="desc">Загрузка…</div>
+  <div class="feels" id="feels"></div>
 </div>
 
-<p class="small">Карта интерактивная: города, температура, ветер</p>
+<div class="grid">
+  <div class="stat"><span>Ветер</span><strong id="wind">—</strong></div>
+  <div class="stat"><span>Влажность</span><strong id="humidity">—</strong></div>
+  <div class="stat"><span>Давление</span><strong id="pressure">—</strong></div>
+  <div class="stat"><span>Качество воздуха</span><strong id="air">—</strong></div>
 </div>
 
-<!-- ===== WEATHER ===== -->
-<div class="card">
-<h2 id="region">Данные региона</h2>
-<div id="weather"></div>
+<div class="map">
+  <svg viewBox="0 0 600 300">
+    <path class="map-outline"
+      d="M40 140 L80 90 L150 70 L260 60 L340 90 L420 80 L500 120
+         L520 160 L480 200 L420 210 L360 230 L280 220 L200 240
+         L140 210 L90 190 Z"/>
+    <g id="dots"></g>
+  </svg>
 </div>
 
-<!-- ===== CHART ===== -->
-<div class="card">
-<h2>📊 Температура на 24 часа</h2>
-<canvas id="chart"></canvas>
+<div class="chart">
+  <canvas id="chart"></canvas>
 </div>
 
 </main>
 
-<div id="tooltip"></div>
+<footer>
+Данные: OpenWeather · Обновление каждые 10 минут
+</footer>
 
 <script>
-/* ===== TIME ===== */
 setInterval(()=>time.innerText=new Date().toLocaleString("ru-RU"),1000);
 
-/* ===== CITIES (ВСЕ) ===== */
+/* ===== CITIES ===== */
 const cities={
   tashkent:{name:"Ташкент",lat:41.2995,lon:69.2401,x:330,y:95},
   samarkand:{name:"Самарканд",lat:39.6542,lon:66.9597,x:260,y:160},
@@ -196,108 +222,54 @@ const cities={
   andijan:{name:"Андижан",lat:40.7821,lon:72.3442,x:380,y:120},
   namangan:{name:"Наманган",lat:40.9983,lon:71.6726,x:360,y:110},
   fergana:{name:"Фергана",lat:40.3864,lon:71.7864,x:350,y:125},
-  kokand:{name:"Коканд",lat:40.5286,lon:70.9425,x:340,y:115},
-  jizzakh:{name:"Джизак",lat:40.1250,lon:67.8800,x:240,y:150},
-  navoiy:{name:"Навои",lat:40.0844,lon:65.3792,x:210,y:140},
-  qarshi:{name:"Карши",lat:38.8606,lon:65.7890,x:240,y:190},
-  termiz:{name:"Термез",lat:37.2242,lon:67.2783,x:260,y:230},
-  urgench:{name:"Ургенч",lat:41.5500,lon:60.6333,x:130,y:120},
   nukus:{name:"Нукус",lat:42.4531,lon:59.6103,x:110,y:110}
 };
 
-/* selector */
 for(const k in cities){
-  const o=document.createElement("option");
-  o.value=k;o.textContent=cities[k].name;
-  city.appendChild(o);
+  city.innerHTML+=\`<option value="\${k}">\${cities[k].name}</option>\`;
+  dots.innerHTML+=\`<circle class="city-dot" cx="\${cities[k].x}" cy="\${cities[k].y}" r="4"/>\`;
 }
 
-/* draw city dots */
-for(const k in cities){
-  const c=cities[k];
-  citiesLayer.innerHTML+=
-    '<circle class="city-dot" id="dot-'+k+'" cx="'+c.x+'" cy="'+c.y+'" r="4" onclick="selectCity(\\''+k+'\\')"/>'+
-    '<text class="city-label" x="'+(c.x+5)+'" y="'+(c.y-5)+'">'+c.name+'</text>';
-}
-
-/* ===== MAIN LOAD ===== */
 async function loadCity(key){
-  localStorage.setItem("city",key);
   const c=cities[key];
-  region.innerText=c.name;
-  summaryTitle.innerText="Сейчас в "+c.name;
+  cityName.innerText=c.name;
+  localStorage.setItem("city",key);
 
   const r=await fetch("/api?lat="+c.lat+"&lon="+c.lon).then(r=>r.json());
 
-  // day/night
   document.body.classList.toggle("night",Date.now()<r.sunrise||Date.now()>r.sunset);
 
-  // summary
-  summaryList.innerHTML=
-    "<li>"+(r.temp<10?"🧥 Холодно":"😊 Комфортно")+"</li>"+
-    "<li>"+(r.air.aqi<=2?"🌫 Воздух хороший":"⚠️ Воздух средний")+"</li>";
-  updatedAt.innerText="Обновлено только что";
+  temp.innerText=Math.round(r.temp)+"°";
+  feels.innerText="Ощущается как "+Math.round(r.feels)+"°";
+  desc.innerText=r.temp>25?"Жарко":r.temp>15?"Комфортно":"Прохладно";
 
-  // weather
-  weather.innerHTML="🌡 "+r.temp+" °C · 🤗 "+r.feels+" °C · 🌬 "+r.wind+" м/с";
-
-  // heatmap
-  heatmap.className="map-outline "+(
-    r.temp<0?"heat-cold":
-    r.temp<10?"heat-cool":
-    r.temp<25?"heat-warm":
-    "heat-hot"
-  );
-
-  // wind
-  windLayer.innerHTML="";
-  const len=Math.min(30,r.wind*3);
-  const rad=(r.wind_deg-90)*Math.PI/180;
-  windLayer.innerHTML=
-    '<line class="wind-arrow" x1="'+c.x+'" y1="'+c.y+'" x2="'+
-    (c.x+Math.cos(rad)*len)+'" y2="'+
-    (c.y+Math.sin(rad)*len)+'"/>';
+  wind.innerText=r.wind+" м/с";
+  humidity.innerText=r.humidity+"%";
+  pressure.innerText=r.pressure_mm+" мм";
+  air.innerText=r.air.aqi<=2?"Хорошее":"Среднее";
 
   drawChart(r.forecast);
-  highlight(key);
 }
 
-function selectCity(k){
-  city.value=k;
-  loadCity(k);
-}
-function highlight(k){
-  document.querySelectorAll(".city-dot").forEach(d=>d.classList.remove("active"));
-  const el=document.getElementById("dot-"+k);
-  if(el) el.classList.add("active");
-}
-
-/* layers toggle */
-toggleHeat.onchange=()=>heatmap.style.display=toggleHeat.checked?"":"none";
-toggleWind.onchange=()=>windLayer.style.display=toggleWind.checked?"":"none";
-
-/* ===== CHART ===== */
 function drawChart(data){
-  if(!data||!data.length) return;
+  if(!data) return;
   const ctx=chart.getContext("2d");
-  chart.width=600;chart.height=260;
-  ctx.clearRect(0,0,600,260);
+  chart.width=600;chart.height=200;
+  ctx.clearRect(0,0,600,200);
 
   const temps=data.map(p=>p.temp);
   const max=Math.max(...temps),min=Math.min(...temps);
-  const pad=40;
 
-  ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue("--accent");
+  ctx.strokeStyle="var(--accent)";
   ctx.beginPath();
   data.forEach((p,i)=>{
-    const x=pad+i*((600-pad*2)/(data.length-1));
-    const y=220-((p.temp-min)/(max-min))*180;
+    const x=i*(600/(data.length-1));
+    const y=160-((p.temp-min)/(max-min))*120;
     i?ctx.lineTo(x,y):ctx.moveTo(x,y);
   });
   ctx.stroke();
 }
 
-/* start */
 city.onchange=()=>loadCity(city.value);
 const saved=localStorage.getItem("city")||"tashkent";
 city.value=saved;
