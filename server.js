@@ -9,6 +9,7 @@ if (!API_KEY) {
 }
 
 /* ================= HTML ================= */
+/* ================= HTML ================= */
 const HTML = `
 <!DOCTYPE html>
 <html lang="ru">
@@ -30,6 +31,8 @@ svg path:hover{fill:#38bdf8}
 canvas{width:100%;height:240px}
 footer{text-align:center;font-size:13px;opacity:.7}
 #summary ul li{margin-bottom:8px}
+select{padding:8px 12px;font-size:16px;border-radius:8px}
+.citybar{display:flex;gap:12px;align-items:center;justify-content:center;margin-top:10px}
 </style>
 </head>
 
@@ -38,6 +41,12 @@ footer{text-align:center;font-size:13px;opacity:.7}
 <header>
   <h1>🇺🇿 Узбекистан — погода и экология</h1>
   <p id="time"></p>
+
+  <!-- ВЫБОР ГОРОДА -->
+  <div class="citybar">
+    <label for="city">Город:</label>
+    <select id="city"></select>
+  </div>
 </header>
 
 <!-- ГЛАВНЫЙ ВЫВОД -->
@@ -52,13 +61,13 @@ footer{text-align:center;font-size:13px;opacity:.7}
 <h2>🗺 Области Узбекистана</h2>
 <svg viewBox="0 0 600 350">
   <path d="M60 160 L140 90 L210 120 L200 190 L120 210 Z"
-    onclick="loadRegion('Ташкент',41.2995,69.2401)"/>
+    onclick="selectCity('tashkent')"/>
   <path d="M200 190 L210 120 L300 130 L320 200 L260 240 Z"
-    onclick="loadRegion('Самарканд',39.6542,66.9597)"/>
+    onclick="selectCity('samarkand')"/>
   <path d="M320 200 L300 130 L380 120 L450 160 L390 230 Z"
-    onclick="loadRegion('Бухара',39.7747,64.4286)"/>
+    onclick="selectCity('bukhara')"/>
 </svg>
-<p>Нажмите на область</p>
+<p>Нажмите на область или выберите город</p>
 </div>
 
 <div class="card">
@@ -81,7 +90,7 @@ footer{text-align:center;font-size:13px;opacity:.7}
 </main>
 
 <footer>
-Реальные данные · Без утечки API ключей · Fly.io
+Реальные данные · Обновляется автоматически · Fly.io
 </footer>
 
 <script>
@@ -91,54 +100,51 @@ setInterval(function(){
     new Date().toLocaleString("ru-RU");
 },1000);
 
+/* ===== ГОРОДА ===== */
+const cities = {
+  tashkent: { name:"Ташкент", lat:41.2995, lon:69.2401 },
+  samarkand:{ name:"Самарканд", lat:39.6542, lon:66.9597 },
+  bukhara:  { name:"Бухара", lat:39.7747, lon:64.4286 }
+};
+
+/* ===== СЕЛЕКТОР ===== */
+const select = document.getElementById("city");
+for (const k in cities) {
+  const o = document.createElement("option");
+  o.value = k;
+  o.textContent = cities[k].name;
+  select.appendChild(o);
+}
+
 /* ===== ЧЕЛОВЕЧЕСКИЙ ВЫВОД ===== */
 function buildSummary(r){
-  const list = [];
+  const list=[];
+  if(r.temp<0) list.push("❄️ Очень холодно — риск переохлаждения");
+  else if(r.temp<10) list.push("🧥 Холодно — нужна тёплая одежда");
+  else if(r.temp<20) list.push("🧣 Прохладно — лёгкая куртка");
+  else if(r.temp<30) list.push("😊 Комфортная температура");
+  else list.push("🔥 Жарко — избегайте солнца");
 
-  if (r.temp < 0) {
-    list.push("❄️ Очень холодно — высокий риск переохлаждения");
-  } else if (r.temp < 10) {
-    list.push("🧥 Холодно — нужна тёплая одежда");
-  } else if (r.temp < 20) {
-    list.push("🧣 Прохладно — лёгкая куртка");
-  } else if (r.temp < 30) {
-    list.push("😊 Комфортная температура");
-  } else {
-    list.push("🔥 Жарко — избегайте солнца");
-  }
-
-  if (r.wind > 7) {
-    list.push("🌬 Сильный ветер — на улице некомфортно");
-  }
-
-  if (r.air.aqi <= 2) {
-    list.push("🌫 Воздух безопасен для прогулок");
-  } else if (r.air.aqi === 3) {
-    list.push("⚠️ Воздух средний — чувствительным лучше осторожно");
-  } else {
-    list.push("🚫 Плохой воздух — лучше остаться дома");
-  }
+  if(r.air.aqi<=2) list.push("🌫 Воздух безопасен для прогулок");
+  else if(r.air.aqi==3) list.push("⚠️ Воздух средний — осторожно");
+  else list.push("🚫 Плохой воздух — лучше остаться дома");
 
   return list;
 }
 
-/* ===== ЗАГРУЗКА РЕГИОНА ===== */
-async function loadRegion(name,lat,lon){
-  document.getElementById("region").innerText = name;
+/* ===== ЗАГРУЗКА ===== */
+async function loadCity(key){
+  const c=cities[key];
+  localStorage.setItem("city",key);
 
-  const r = await fetch("/api?lat="+lat+"&lon="+lon).then(r=>r.json());
+  document.getElementById("region").innerText=c.name;
+  document.getElementById("summaryTitle").innerText="Сейчас в "+c.name;
 
-  // главный вывод
-  document.getElementById("summaryTitle").innerText =
-    "Сейчас в " + name;
+  const r=await fetch("/api?lat="+c.lat+"&lon="+c.lon).then(r=>r.json());
 
-  const summary = buildSummary(r);
   document.getElementById("summaryList").innerHTML =
-    summary.map(function(t){
-      return "<li>"+t+"</li>";
-    }).join("");
+    buildSummary(r).map(t=>"<li>"+t+"</li>").join("");
 
-  // погода
   document.getElementById("weather").innerHTML =
     "<div>🌡 "+r.temp+" °C</div>"+
     "<div>🤗 "+r.feels+" °C</div>"+
@@ -147,24 +153,29 @@ async function loadRegion(name,lat,lon){
     "<div>🌬 "+r.wind+" м/с</div>"+
     "<div>👁 "+r.visibility_km+" км</div>";
 
-  document.getElementById("weatherHuman").innerText =
-    r.temp<0?"Морозно, риск переохлаждения":
-    r.temp<10?"Холодно, нужна тёплая одежда":
-    r.temp<20?"Прохладно, комфортно":
-    r.temp<30?"Тепло, отличная погода":
-    "Жарко, избегайте солнца";
-
-  // экология
   document.getElementById("air").innerText =
     "AQI "+r.air.aqi+", PM2.5 "+r.air.pm25+" µg/m³";
 
   document.getElementById("airHuman").innerHTML =
     r.air.aqi<=2?"<span class='good'>Воздух безопасен</span>":
-    r.air.aqi==3?"<span class='warn'>Чувствительным лучше ограничить прогулки</span>":
-    "<span class='bad'>Лучше оставаться в помещении</span>";
+    r.air.aqi==3?"<span class='warn'>Лучше осторожно</span>":
+    "<span class='bad'>Лучше остаться дома</span>";
 
   drawChart(r.forecast);
 }
+
+/* ===== КАРТА ===== */
+function selectCity(key){
+  select.value=key;
+  loadCity(key);
+}
+
+/* ===== СТАРТ ===== */
+select.onchange=function(){ loadCity(this.value); };
+
+const saved = localStorage.getItem("city") || "tashkent";
+select.value=saved;
+loadCity(saved);
 
 /* ===== ГРАФИК ===== */
 function drawChart(data){
