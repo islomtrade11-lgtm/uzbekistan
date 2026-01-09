@@ -70,8 +70,19 @@ footer{text-align:center;font-size:13px;opacity:.8}
 #summary ul li{margin-bottom:8px}
 select{padding:8px 12px;font-size:16px;border-radius:8px}
 .citybar{display:flex;gap:12px;align-items:center;justify-content:center;margin-top:10px}
-.muted{opacity:.75}
-.small{font-size:14px}
+.small{font-size:14px;opacity:.75}
+
+/* карта */
+svg{max-width:100%}
+svg path{
+  fill:#c7d2fe;
+  stroke:#1e293b;
+  cursor:pointer;
+  transition:.3s;
+}
+svg path:hover{fill:#38bdf8}
+svg path.active{fill:#2563eb}
+
 #tooltip{
   position:absolute;
   background:#000;
@@ -79,8 +90,8 @@ select{padding:8px 12px;font-size:16px;border-radius:8px}
   padding:6px 8px;
   border-radius:6px;
   font-size:13px;
-  pointer-events:none;
   display:none;
+  pointer-events:none;
 }
 </style>
 </head>
@@ -99,28 +110,40 @@ select{padding:8px 12px;font-size:16px;border-radius:8px}
 <div class="card" id="summary" style="margin:20px auto;max-width:1200px">
   <h2 id="summaryTitle">Сейчас</h2>
   <ul id="summaryList" style="list-style:none;padding:0;font-size:18px"></ul>
-  <p class="small muted" id="updatedAt"></p>
+  <p class="small" id="updatedAt"></p>
 </div>
 
 <main>
 
+<!-- КАРТА (НЕ УБРАНА!) -->
+<div class="card">
+<h2>🗺 Карта Узбекистана</h2>
+<svg viewBox="0 0 600 350">
+  <path id="map-tashkent"  d="M60 160 L140 90 L210 120 L200 190 L120 210 Z" onclick="selectCity('tashkent')"/>
+  <path id="map-samarkand" d="M200 190 L210 120 L300 130 L320 200 L260 240 Z" onclick="selectCity('samarkand')"/>
+  <path id="map-bukhara"   d="M320 200 L300 130 L380 120 L450 160 L390 230 Z" onclick="selectCity('bukhara')"/>
+  <path id="map-nukus"     d="M450 160 L520 190 L540 250 L480 280 L420 240 Z" onclick="selectCity('nukus')"/>
+</svg>
+<p class="small">Можно выбрать город на карте или в списке выше</p>
+</div>
+
 <div class="card">
 <h2 id="region">Данные региона</h2>
 <div class="grid" id="weather"></div>
-<p id="weatherHuman" class="muted"></p>
+<p id="weatherHuman" class="small"></p>
 </div>
 
 <div class="card">
 <h2>🌫 Экология</h2>
 <p id="air"></p>
 <p id="airHuman"></p>
-<p id="airExplain" class="small muted"></p>
+<p id="airExplain" class="small"></p>
 </div>
 
 <div class="card">
 <h2>📊 Температура на 24 часа</h2>
 <canvas id="chart"></canvas>
-<p id="forecastText" class="small muted"></p>
+<p id="forecastText" class="small"></p>
 </div>
 
 </main>
@@ -135,7 +158,7 @@ select{padding:8px 12px;font-size:16px;border-radius:8px}
 /* ===== ВРЕМЯ ===== */
 setInterval(()=>time.innerText=new Date().toLocaleString("ru-RU"),1000);
 
-/* ===== ГОРОДА ===== */
+/* ===== ВСЕ ГОРОДА (НИЧЕГО НЕ УБРАНО) ===== */
 const cities={
   tashkent:{name:"Ташкент",lat:41.2995,lon:69.2401},
   samarkand:{name:"Самарканд",lat:39.6542,lon:66.9597},
@@ -152,52 +175,68 @@ const cities={
   nukus:{name:"Нукус",lat:42.4531,lon:59.6103}
 };
 
-/* ===== СЕЛЕКТОР ===== */
+/* селектор */
 for(const k in cities){
   const o=document.createElement("option");
-  o.value=k;o.textContent=cities[k].name;
+  o.value=k;
+  o.textContent=cities[k].name;
   city.appendChild(o);
 }
 
-/* ===== ЗАГРУЗКА ===== */
+/* ===== ГЛАВНАЯ ЗАГРУЗКА ===== */
 async function loadCity(key){
   localStorage.setItem("city",key);
   const c=cities[key];
+
   region.innerText=c.name;
   summaryTitle.innerText="Сейчас в "+c.name;
 
   const r=await fetch("/api?lat="+c.lat+"&lon="+c.lon).then(r=>r.json());
 
-  // 🌗 день / ночь
-  const now=Date.now();
-  document.body.classList.toggle("night",now<r.sunrise||now>r.sunset);
+  /* день / ночь */
+  document.body.classList.toggle("night",Date.now()<r.sunrise||Date.now()>r.sunset);
 
-  summaryList.innerHTML=(
-    r.temp<10?"🧥 Холодно — одевайтесь теплее":
-    r.temp<20?"🧣 Прохладно":
-    "😊 Комфортная погода"
-  )+"<br>"+(
-    r.air.aqi<=2?"🌫 Воздух безопасен":
-    "⚠️ Лучше без нагрузок"
-  );
+  summaryList.innerHTML=
+    "<li>"+(r.temp<10?"🧥 Холодно — одевайтесь теплее":"😊 Комфортная погода")+"</li>"+
+    "<li>"+(r.air.aqi<=2?"🌫 Воздух безопасен":"⚠️ Лучше без нагрузок")+"</li>";
+
+  updatedAt.innerText="Обновлено только что";
 
   weather.innerHTML=
-    "🌡 "+r.temp+" °C · 🤗 "+r.feels+
-    " °C · 💧 "+r.humidity+
-    "% · 🌬 "+r.wind+" м/с";
+    "<div>🌡 "+r.temp+" °C</div>"+
+    "<div>🤗 "+r.feels+" °C</div>"+
+    "<div>💧 "+r.humidity+"%</div>"+
+    "<div>🌬 "+r.wind+" м/с</div>";
+
+  weatherHuman.innerText =
+    r.temp<10?"На улице холодно.":
+    r.temp<20?"Прохладно, комфортно.":
+    "Погода комфортная.";
 
   air.innerText="AQI "+r.air.aqi+", PM2.5 "+r.air.pm25;
-  airExplain.innerText=
-    r.air.aqi<=2?"Можно спокойно гулять":
-    "Лучше быть осторожнее";
+  airHuman.innerHTML=r.air.aqi<=2?"<span class='good'>Хороший воздух</span>":"<span class='warn'>Средний воздух</span>";
+  airExplain.innerText=r.air.aqi<=2?"Можно спокойно гулять":"Лучше снизить нагрузку";
 
   drawChart(r.forecast);
+  highlightMap(key);
+}
+
+/* карта ↔ селектор */
+function selectCity(key){
+  city.value=key;
+  loadCity(key);
+}
+function highlightMap(key){
+  document.querySelectorAll("svg path").forEach(p=>p.classList.remove("active"));
+  const el=document.getElementById("map-"+key);
+  if(el) el.classList.add("active");
 }
 
 /* ===== ГРАФИК ===== */
 function drawChart(data){
-  const c=chart,ctx=c.getContext("2d");
-  c.width=600;c.height=260;
+  const ctx=chart.getContext("2d");
+  chart.width=600;
+  chart.height=260;
   ctx.clearRect(0,0,600,260);
 
   const temps=data.map(x=>x.temp);
@@ -205,7 +244,6 @@ function drawChart(data){
 
   ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue("--accent");
   ctx.beginPath();
-
   data.forEach((p,i)=>{
     const x=i*(600/(data.length-1));
     const y=240-((p.temp-min)/(max-min))*200;
@@ -213,20 +251,18 @@ function drawChart(data){
   });
   ctx.stroke();
 
-  c.onmousemove=e=>{
+  chart.onmousemove=e=>{
     const i=Math.round(e.offsetX/(600/(data.length-1)));
     if(!data[i]) return tooltip.style.display="none";
     tooltip.style.display="block";
     tooltip.style.left=e.pageX+10+"px";
     tooltip.style.top=e.pageY-30+"px";
-    tooltip.innerText=
-      new Date(data[i].time).getHours()+":00 — "+
-      data[i].temp+"°C";
+    tooltip.innerText=new Date(data[i].time).getHours()+":00 — "+data[i].temp+"°C";
   };
-  c.onmouseleave=()=>tooltip.style.display="none";
+  chart.onmouseleave=()=>tooltip.style.display="none";
 }
 
-/* ===== СТАРТ ===== */
+/* старт */
 city.onchange=()=>loadCity(city.value);
 const saved=localStorage.getItem("city")||"tashkent";
 city.value=saved;
@@ -236,7 +272,6 @@ loadCity(saved);
 </body>
 </html>
 `;
-
 
 /* ================= DATA ================= */
 async function getData(lat, lon) {
