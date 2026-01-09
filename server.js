@@ -1,5 +1,4 @@
 import http from "http";
-import fetch from "node-fetch";
 
 const PORT = process.env.PORT || 3000;
 const API_KEY = process.env.OPENWEATHER_API_KEY;
